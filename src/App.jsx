@@ -1,48 +1,44 @@
-import { Component } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import CardList from "./components/card-list/card-list.component";
 import SearchBox from "./components/search-box/search-box.component";
 
-class App extends Component {
-  constructor() {
-    super();
-    this.state = {
-      monsters: [],
-      searchField: "",
-    };
-    console.log("contructor");
-  }
+const App = () => {
+  const [searchField, setSearchField] = useState("");
+  const [monsters, setMonsters] = useState([]);
+  const [filteredMonsters, setFilteredMonsters] = useState(monsters);
 
-  componentDidMount() {
-    console.log("componentDidMount");
+  useEffect(() => {
     // Call API
     fetch("https://jsonplaceholder.typicode.com/users")
       .then((resp) => resp.json())
-      .then((users) => this.setState({ monsters: users }));
-  }
+      .then((users) => setMonsters(users));
+  }, []);
 
-  // Handle search
-  onSearchField = (event) => {
-    const searchField = event.target.value.toLocaleLowerCase();
-    this.setState({ searchField: searchField });
-  };
-
-  render() {
-    // console.log("render from App");
-    const { monsters, searchField } = this.state;
-    const { onSearchField } = this;
-
-    const filteredMonsters = monsters.filter((monster) =>
+  useEffect(() => {
+    const newFilteredMonsters = monsters.filter((monster) =>
       monster.name.toLocaleLowerCase().includes(searchField)
     );
-    return (
-      <div className="App">
-        <h1 className="app-title">Monters Rolodex</h1>
-        <SearchBox onChangeHandler={onSearchField} className="monster-search-box" placeholder="Search monster"/>
-        <CardList monsters={filteredMonsters} />
-      </div>
-    );
-  }
-}
+    setFilteredMonsters(newFilteredMonsters);
+  }, [monsters, searchField]);
+
+  // Handle search
+  const onSearchField = (event) => {
+    const searchFieldString = event.target.value.toLocaleLowerCase();
+    setSearchField(searchFieldString);
+  };
+
+  return (
+    <div className="App">
+      <h1 className="app-title">Monters Rolodex</h1>
+      <SearchBox
+        onChangeHandler={onSearchField}
+        className="monster-search-box"
+        placeholder="Search monster"
+      />
+      <CardList monsters={filteredMonsters} />
+    </div>
+  );
+};
 
 export default App;
